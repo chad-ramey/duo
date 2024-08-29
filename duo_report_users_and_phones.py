@@ -4,7 +4,7 @@ Script: Export Duo Users to CSV
 Description:
 This Python script retrieves a list of users and associated phone details from Duo Security's Admin API
 and exports the information to a CSV file. The API credentials (Integration Key, Secret Key, and API Hostname)
-are securely pulled from a configuration file stored on the user's computer.
+are securely pulled from a configuration file specified by the user.
 
 Functions:
 - `load_duo_config(file_path)`: Reads the Duo API credentials from a specified JSON configuration file.
@@ -24,8 +24,8 @@ Usage:
    - Ensure that this file is securely stored and accessible only by authorized users.
 
 2. **Running the Script:**
-   - Update the `config_file` variable in the script to point to the path where the `duo_config.json` file is stored.
-   - Execute the script using Python. It will automatically read the API credentials from the JSON file and 
+   - When prompted, provide the full path to your `duo_config.json` file.
+   - The script will automatically read the API credentials from the JSON file and 
      retrieve the user data from Duo.
 
 3. **CSV Output:**
@@ -60,32 +60,38 @@ def load_duo_config(file_path):
     with open(file_path, 'r') as file:
         return json.load(file)
 
-# Load the Duo configuration from a file
-config_file = "path_to_your_file/duo_config.json"
-config = load_duo_config(config_file)
+def main():
+    # Prompt for the configuration file location
+    config_file = input('Enter the full path to your Duo configuration file (e.g., duo_config.json): ')
+    
+    # Load the Duo configuration from the file
+    config = load_duo_config(config_file)
 
-# Configuration and information about objects to create.
-admin_api = duo_client.Admin(
-    ikey=config['ikey'],
-    skey=config['skey'],
-    host=config['host'],
-)
+    # Set up the Duo Admin API client
+    admin_api = duo_client.Admin(
+        ikey=config['ikey'],
+        skey=config['skey'],
+        host=config['host'],
+    )
 
-# Retrieve user info from API:
-users = admin_api.get_users()
+    # Retrieve user info from API:
+    users = admin_api.get_users()
 
-# Print CSV of username, phone number, phone type, and phone platform:
-#
-# (If a user has multiple phones, there will be one line printed per
-# associated phone.)
-reporter = csv.writer(sys.stdout)
-print("[+] Report of all users and associated phones:")
-reporter.writerow(('Username', 'Phone Number', 'Type', 'Platform'))
-for user in users:
-    for phone in user["phones"]:
-        reporter.writerow([
-            user["username"],
-            phone["number"],
-            phone["type"],
-            phone["platform"],
-        ])
+    # Print CSV of username, phone number, phone type, and phone platform:
+    #
+    # (If a user has multiple phones, there will be one line printed per
+    # associated phone.)
+    reporter = csv.writer(sys.stdout)
+    print("[+] Report of all users and associated phones:")
+    reporter.writerow(('Username', 'Phone Number', 'Type', 'Platform'))
+    for user in users:
+        for phone in user["phones"]:
+            reporter.writerow([
+                user["username"],
+                phone["number"],
+                phone["type"],
+                phone["platform"],
+            ])
+
+if __name__ == "__main__":
+    main()

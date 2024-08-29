@@ -6,12 +6,12 @@ This Python script allows you to create new Duo Admins by entering their details
 After creating each admin, the script sends an activation email to the new admin. The process 
 repeats in a loop, asking the user if they want to create another admin. The API credentials 
 (Integration Key, Secret Key, and API Hostname) are securely pulled from a configuration file 
-stored on the user's computer.
+specified by the user.
 
 Functions:
 - `load_duo_config(file_path)`: Reads the Duo API credentials from a specified JSON configuration file.
-- `create_admin(email, name, role, phone='')`: Creates a new Duo Admin using the provided details and returns the admin ID.
-- `send_activation_email(admin_id)`: Sends an activation email to the newly created admin.
+- `create_admin(admin_api, email, name, role, phone='')`: Creates a new Duo Admin using the provided details and returns the admin ID.
+- `send_activation_email(admin_api, admin_id)`: Sends an activation email to the newly created admin.
 
 Usage:
 1. **Configuration File Setup:**
@@ -26,10 +26,11 @@ Usage:
    - Ensure that this file is securely stored and accessible only by authorized users.
 
 2. **Running the Script:**
-   - Update the `config_file` variable in the script to point to the path where the `duo_config.json` file is stored.
-   - Execute the script using Python. It will prompt you to enter the details for each admin you want to create, 
-     including email, name, role, and optionally, phone number. After each admin is created, an activation email 
-     will be sent automatically. The script will continue to prompt you until you choose to stop.
+   - When prompted, provide the full path to your `duo_config.json` file.
+   - The script will prompt you to enter the details for each admin you want to create, 
+     including email, name, role, and optionally, phone number. After each admin is created, 
+     an activation email will be sent automatically. The script will continue to prompt you 
+     until you choose to stop.
 
 Notes:
 - **Security Considerations:** Ensure that the `duo_config.json` file is stored in a secure location and 
@@ -52,18 +53,45 @@ def load_duo_config(file_path):
     with open(file_path, 'r') as file:
         return json.load(file)
 
-# Load the Duo configuration from a file
-config_file = "path_to_your_file/duo_config.json"
-config = load_duo_config(config_file)
+def main():
+    # Prompt for the configuration file location
+    config_file = input('Enter the full path to your Duo configuration file (e.g., duo_config.json): ')
+    
+    # Load the Duo configuration from the file
+    config = load_duo_config(config_file)
 
-# Configuration and information about objects to create.
-admin_api = duo_client.Admin(
-    ikey=config['ikey'],
-    skey=config['skey'],
-    host=config['host'],
-)
+    # Set up the Duo Admin API client
+    admin_api = duo_client.Admin(
+        ikey=config['ikey'],
+        skey=config['skey'],
+        host=config['host'],
+    )
 
-def create_admin(email, name, role, phone=''):
+    while True:
+        admin_email = input('Enter admin email: ')
+        admin_name = input('Enter admin name: ')
+        admin_role = input('Enter admin role: ')
+        admin_phone = input('Enter admin phone (optional, press Enter to skip): ') or None
+        
+        # Call the create admin function
+        new_admin_id = create_admin(
+            admin_api=admin_api,
+            email=admin_email,
+            name=admin_name,
+            role=admin_role,
+            phone=admin_phone
+        )
+        
+        # If admin was successfully created, send activation email
+        if new_admin_id:
+            send_activation_email(admin_api, new_admin_id)
+
+        # Ask the user if they want to create another admin
+        create_another = input('Do you want to create another admin? (yes/no): ').strip().lower()
+        if create_another != 'yes':
+            break
+
+def create_admin(admin_api, email, name, role, phone=''):
     # We will pass a dummy password since the API still requires it but it's deprecated
     dummy_password = 'dummy_password'
     admin_details = {
@@ -83,7 +111,7 @@ def create_admin(email, name, role, phone=''):
         print(f"[-] Error creating admin {name}: {e}")
         return None
 
-def send_activation_email(admin_id):
+def send_activation_email(admin_api, admin_id):
     if admin_id:
         try:
             # Assemble the activation link endpoint
@@ -92,30 +120,6 @@ def send_activation_email(admin_id):
             print(f"[+] Activation email sent successfully for admin_id: {admin_id}")
         except Exception as e:
             print(f"[-] Error sending activation email for admin_id {admin_id}: {e}")
-
-def main():
-    while True:
-        admin_email = get_next_arg('Enter admin email: ')
-        admin_name = get_next_arg('Enter admin name: ')
-        admin_role = get_next_arg('Enter admin role: ')
-        admin_phone = input('Enter admin phone (optional, press Enter to skip): ') or None
-        
-        # Call the create admin function
-        new_admin_id = create_admin(
-            email=admin_email,
-            name=admin_name,
-            role=admin_role,
-            phone=admin_phone
-        )
-        
-        # If admin was successfully created, send activation email
-        if new_admin_id:
-            send_activation_email(new_admin_id)
-
-        # Ask the user if they want to create another admin
-        create_another = input('Do you want to create another admin? (yes/no): ').strip().lower()
-        if create_another != 'yes':
-            break
 
 if __name__ == "__main__":
     main()
