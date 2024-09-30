@@ -3,7 +3,6 @@
 This repository contains Python scripts designed to automate administrative tasks for Duo Security, including creating admins and generating reports.
 
 ## Table of Contents
-- [Duo Lab](#duo-lab)
   - [Table of Contents](#table-of-contents)
   - [Scripts Overview](#scripts-overview)
   - [Requirements](#requirements)
@@ -15,9 +14,9 @@ This repository contains Python scripts designed to automate administrative task
 ## Scripts Overview
 Here’s a list of all the scripts in this repository along with their descriptions:
 
-1. **duo_bulk_create_admins.py**: Automates the bulk creation of Duo admins using a list of admin data, useful for onboarding new admins at scale.
-2. **duo_create_admin.py**: Creates a single Duo admin, allowing for individual admin onboarding.
-3. **duo_report_users_and_phones.py**: Generates a report of all Duo users and their associated phone numbers for security and audit purposes.
+1. **[duo_bulk_create_admins.py](duo_bulk_create_admins.py)**: Automates the bulk creation of Duo admins using a list of admin data, useful for onboarding new admins at scale.
+2. **[duo_create_admin.py](duo_create_admin.py)**: Creates a single Duo admin, allowing for individual admin onboarding.
+3. **[duo_report_users_and_phones.py](duo_report_users_and_phones.py)**: Generates a report of all Duo users and their associated phone numbers for security and audit purposes.
 
 ## Requirements
 - **Python 3.x**: Ensure that Python 3 is installed on your system.
