@@ -3,7 +3,6 @@
 This repository contains Python scripts designed to automate administrative tasks for Duo Security, including creating admins and generating reports.
 
 ## Table of Contents
-  - [Table of Contents](#table-of-contents)
   - [Scripts Overview](#scripts-overview)
   - [Requirements](#requirements)
   - [Installation](#installation)
